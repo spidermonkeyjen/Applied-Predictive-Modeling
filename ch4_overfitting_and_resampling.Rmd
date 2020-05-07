@@ -1,0 +1,101 @@
+---
+title: "Ch 4: Overfitting and Model Tuning"
+---
+
+#Chapter 4 Outline
+4.1 the problem with overfitting
+4.2 model tuning
+4.3 data splitting
+4.4 resampling techniques
+  k-fold cross validation
+  generalized cross validation
+  repeated training/testing splits
+  bootstrap
+4.5 Credit History Case Study
+4.6 Final tuning parameter selection
+4.7 Data Splitting Recommedations
+4.8 How to select between models
+
+#Exercises 4.3 and 4.4
+(exercises 4.1 and 4.2 cover data splitting techniques only)
+
+##4.3
+Partial least squares (Sect. 6.3) was used to model the yield of a chemical manufacturing process (Sect. 1.4). The data can be found in the AppliedPredictiveModeling package and can be loaded using:
+```{r}
+library(AppliedPredictiveModeling)
+data(ChemicalManufacturingProcess)
+```
+
+   The objective of this analysis is to find the number of PLS components that yields the optimal R2 value (Sect. 5.1). PLS models with 1 through 10 components were each evaluated using five repeats of 10-fold cross-validation and the results are presented in the table in the textbook on page 90.
+   
+(a) Using the “one-standard error” method, what number of PLS components provides the most parsimonious model?
+The “one-standard error” method for choosing simpler models finds the numerically optimal value and its corresponding standard error and then seeks the simplest model whose performance is within a single standard error of the numerically best value. This procedure originated with classification and regression trees.
+
+Based on the table provided, the model with the best R2 value is PLS of 4.
+
+(b) Compute the tolerance values for this example. If a 10 % loss in R2 is acceptable, then what is the optimal number of PLS components?
+
+Another approach is to choose a simpler model that is within a certain tolerance of the numerically best value. The percent decrease in performance could be quantified by (X − O)/O where X is the performance value and O is the numerically optimal value. 
+
+(0.545 - 10) / 10 = 0.9455
+a model with 1 components is within 0.9455 of the best model and thus would be a simple and acceptable model.
+
+(c) Several other models (discussed in Part II) with varying degrees of complexity were trained and tuned and the results are presented in Fig. 4.13. If the goal is to select the model that optimizes R2, then which model(s) would you choose, and why?
+
+If we are only trying to optimize R2, we would select the SVM model because it has the highest R2 value.
+
+(d) Prediction time, as well as model complexity (Sect. 4.8) are other factors to consider when selecting the optimal model(s). Given each model’s pre- diction time, model complexity, and R2 estimates, which model(s) would you choose, and why?
+
+I would select the boosted linear regression model if we have a large data set. It is less computationally intensive and time intensice compared to the SVM model as well, although slightly less accuracte. It is, however, more accurate than the competing models and has a lower run time.
+
+
+##4.4. 
+Brodnjak-Vonina et al. (2005) develop a methodology for food laborato- ries to determine the type of oil from a sample. In their procedure, they used a gas chromatograph (an instrument that separate chemicals in a sample) to measure seven different fatty acids in an oil. These measurements would then be used to predict the type of oil in a food samples. To create their model, they used 96 samples2 of seven types of oils.
+These data can be found in the caret package using data(oil). The oil types are contained in a factor variable called oilType. The types are pumpkin(coded as A), sunflower (B), peanut (C), olive (D), soybean (E), rapeseed (F) and corn (G). In R,
+```{r}
+data(oil)
+str(oilType)
+table(oilType)
+```
+
+(a) Use the sample function in base R to create a completely random sample of 60 oils. How closely do the frequencies of the random sample match the original samples? Repeat this procedure several times of understand the variation in the sampling process.
+```{r}
+set.seed(100)
+table(sample(oilType, 60, replace = FALSE))
+table(sample(oilType, 60, replace = TRUE))
+```
+
+Without replacement, the sample is not as representitive of E and F as the original data. With resampling, their likelyhood of appearing increases, but to the same extent variable D increases.
+
+(b) Use the caret package function createDataPartition to create a stratified random sample. How does this compare to the completely random samples?
+```{r}
+oil_training <- createDataPartition(oilType, p = .60, list= TRUE)
+str(oil_training)
+```
+
+(c) With such a small samples size, what are the options for determining performance of the model? Should a test set be used?
+
+With a small sample size, we should avoid splitting the data as we will severly limit representation. Instead we should try using cross validation on all of the data or a bootstrap method of resampling.
+
+
+(d) One method for understanding the uncertainty of a test set is to use a confidence interval. To obtain a confidence interval for the overall accuracy, the based R function binom.test can be used. It requires the user to input the number of samples and the number correctly classified to calculate the interval. For example, suppose a test set sample of 20 oil samples was set aside and 76 were used for model training. For this test set size and a model that is about 80 % accurate (16 out of 20 correct), the confidence interval would be computed using
+binom.test(16, 20)
+             Exact binomial test
+data: 16 and 20
+number of successes = 16, number of trials = 20, p-value = 0.01182 alternative hypothesis: true probability of success is not equal to 0.5 95 percent confidence interval:
+0.563386 0.942666 sample estimates: probability of success
+0.8
+In this case, the width of the 95% confidence interval is 37.9%. Try different samples sizes and accuracy rates to understand the trade-off between the uncertainty in the results, the model performance, and the test set size.
+```{r}
+binom.test(10, 20) #wide CI, not very accurate. A p-value of 1!!
+binom.test(18, 20) #tighter CI and a significant p-value
+binom.test(29, 70)  #smaller CI and a not-good p-value
+```
+
+
+
+
+
+
+
+

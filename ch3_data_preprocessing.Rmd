@@ -1,0 +1,146 @@
+---
+title: "CH 3: Data Pre-Processing"
+---
+
+
+*3.1*. The UC Irvine Machine Learning Repository6 contains a data set related to glass identification. The data consist of 214 glass samples labeled as one of seven class categories. There are nine predictors, including the refractive index and percentages of eight elements: Na, Mg, Al, Si, K, Ca, Ba, and Fe.
+The data can be accessed via:
+```{r}
+library(mlbench)
+data(Glass)
+#str(Glass)
+```
+
+(a) Using visualizations, explore the predictor variables to understand their distributions as well as the relationships between predictors.
+```{r}
+library(funModeling)
+library(tidyverse)
+freq(Glass)
+```
+
+The type variable is the only categorical variable, so it is the only one that is gettting a frequency distribution plot and table of all the variables. Type 2 is the most prevelent, with 1 coming in 2nd. The other types are much less prevelant, so if we were actually model with this data set we might 
+
+
+```{r}
+profiling_num(Glass)
+
+Glass %>%
+  select(RI) %>%
+  ggplot(aes(x=RI)) +
+  geom_histogram() +
+  theme_minimal()
+
+Glass %>%
+  select(Na) %>%
+  ggplot(aes(x=Na)) +
+  geom_histogram() +
+  theme_minimal()
+
+Glass %>%
+  select(Mg) %>%
+  ggplot(aes(x=Mg)) +
+  geom_histogram() +
+  theme_minimal()
+
+Glass %>%
+  select(Al) %>%
+  ggplot(aes(x=Al)) +
+  geom_histogram() +
+  theme_minimal()
+
+Glass %>%
+  select(Si) %>%
+  ggplot(aes(x=Si)) +
+  geom_histogram() +
+  theme_minimal()
+
+Glass %>%
+  select(K) %>%
+  ggplot(aes(x=K)) +
+  geom_histogram() +
+  theme_minimal()
+
+Glass %>%
+  select(Ca) %>%
+  ggplot(aes(x=Ca)) +
+  geom_histogram() +
+  theme_minimal()
+
+Glass %>%
+  select(Ba) %>%
+  ggplot(aes(x=Ba)) +
+  geom_histogram() +
+  theme_minimal()
+
+Glass %>%
+  select(Fe) %>%
+  ggplot(aes(x=Fe)) +
+  geom_histogram() +
+  theme_minimal()
+```
+
+```{r}
+library(corrplot)
+Glass2 <- Glass %>% mutate(Type = as.numeric(Type))
+correlation_table(data=Glass2, target="Type") 
+```
+
+```{r}
+corrrr <- cor(Glass2)
+corrplot(corrrr, type="upper", order="hclust")
+```
+
+(b) Do there appear to be any outliers in the data? Are any predictors skewed?
+Fe, Ba, K, and Mg are all 
+
+(c) Are there any relevant transformations of one or more predictors that might improve the classification model?
+Log transformations, center and scaling may help as well.
+
+
+
+*3.2*. The soybean data can also be found at the UC Irvine Machine Learning Repository. Data were collected to predict disease in 683 soybeans. The 35 predictors are mostly categorical and include information on the environmen- tal conditions (e.g., temperature, precipitation) and plant conditions (e.g., left spots, mold growth). The outcome labels consist of 19 distinct classes.
+
+The data can be loaded via:
+```{r}
+data(Soybean)
+```
+
+(a) Investigate the frequency distributions for the categorical predictors. Are any of the distributions degenerate in the ways discussed earlier in this chapter?
+```{r}
+freq(Soybean)
+```
+
+
+(b) Roughly 18 % of the data are missing. Are there particular predictors that are more likely to be missing? Is the pattern of missing data related to the classes?
+```{r}
+df_status(Soybean)
+```
+
+(c) Develop a strategy for handling missing data, either by eliminating predictors or imputation.
+
+
+*3.3.* Chapter 5 introduces Quantitative Structure-Activity Relationship (QSAR) modeling where the characteristics of a chemical compound are used to predict other chemical properties. The caret package contains a QSAR data set from Mente and Lombardo (2005). Here, the ability of a chemical to permeate the blood-brain barrier was experimentally determined for 208 compounds. 134 descriptors were measured for each compound.
+(a) Start R and use these commands to load the data:
+```{r}
+library(caret)
+data(BloodBrain)
+```
+
+The numeric outcome is contained in the vector logBBB while the predictors are in the data frame bbbDescr.
+(b) Do any of the individual predictors have degenerate distributions?
+```{r}
+df_status(bbbDescr)
+```
+
+(c) Generally speaking, are there strong relationships between the predictor data? If so, how could correlations in the predictor set be reduced? Does this have a dramatic effect on the number of predictors available for modeling?
+```{r}
+corrrr2 <- cor(bbbDescr)
+corrplot(corrrr2, type="upper", order="hclust")
+```
+
+
+
+
+
+
+

@@ -1,0 +1,27 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1588200221306.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3773246042",
+    "id" : "44A7ED14",
+    "lastKnownWriteTime" : 1588284963,
+    "last_content_update" : 1588284963537,
+    "path" : "~/Documents/GitHub/Applied Predictive Modeling/ch6_regression_cousins.Rmd",
+    "project_path" : "ch6_regression_cousins.Rmd",
+    "properties" : {
+        "chunk_output_type" : "inline",
+        "cursorPosition" : "6,19",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

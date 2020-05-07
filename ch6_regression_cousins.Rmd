@@ -1,0 +1,163 @@
+---
+title: "Chapter 6: Linear Regression and Its Cousins"
+---
+
+Chapter 5 provided an overview of how to evaluate regression models, with a focus on RMSE and R2 values and their interpretations as well as their relationship to bias/variance tradeoff. It did not have any associated exercises.
+
+#Chapter 6 Outline:
+6.1: Case Study on Quantitative Structure-ACtivity Relationship Modeling
+6.2: Linea Regression
+6.3: Partial Least Squares
+6.4 Penalized Models (ridge, lasso, elastic net)
+6.5 Computing
+
+
+
+#Exercises
+The three problems in chapter 6 are fairly similar: look at the data, pre-process the data, split into training and testing, build models, evaluate. Since we're very familiar with regression, we'll just do the first exercise.
+
+#6.1
+Infrared (IR) spectroscopy technology is used to determine the chemi- cal makeup of a substance. The theory of IR spectroscopy holds that unique molecular structures absorb IR frequencies differently. In practice a spectrom- eter fires a series of IR frequencies into a sample material, and the device measures the absorbance of the sample at each individual frequency. This series of measurements creates a spectrum profile which can then be used to determine the chemical makeup of the sample material.
+A Tecator Infratec Food and Feed Analyzer instrument was used to analyze 215 samples of meat across 100 frequencies. A sample of these frequency pro- files is displayed in Fig. 6.20. In addition to an IR profile, analytical chemistry determined the percent content of water, fat, and protein for each sample. If we can establish a predictive relationship between IR spectrum and fat content, then food scientists could predict a sample’s fat content with IR instead of using analytical chemistry. This would provide costs savings, since analytical chemistry is a more expensive, time-consuming process:
+(a) Start R and use these commands to load the data:
+```{r}
+library(caret)
+data(tecator)
+```
+The matrix absorp contains the 100 absorbance values for the 215 samples, while matrix endpoints contains the percent of moisture, fat, and protein in columns 1–3, respectively.
+
+(b) In this example the predictors are the measurements at the individual frequencies. Because the frequencies lie in a systematic order (850–1,050 nm), the predictors have a high degree of correlation. Hence, the data lie in a smaller dimension than the total number of predictors (100). Use PCA to determine the effective dimension of these data. What is the effective dimension?
+note: this is from section 3.3
+```{r}
+library(pls)
+pca.fit <- prcomp(absorp, center = TRUE, scale = TRUE)
+s <- summary(pca.fit)
+s
+plot(1:100, s$importance[3,], type = "b")
+```
+
+Principle component 1 has the highest proportion of information explained due to it (98.63%), and is drastically greater at explaining the variance than any of the other components. Components 2 and 3 add on some additional information, but they are unnecessary. After 5 components 100% of variability is explained due to colinearity among the variables.
+
+
+
+(c) Split the data into a training and a test set, pre-process the data, and build each variety of models described in this chapter. For those models with tuning parameters, what are the optimal values of the tuning parameter(s)?
+
+The data is split in two distinct data frames, so they should be joined so the outcomes and predictors are matched and can be used in modeling.
+```{r}
+model_data <- data.frame(absorp,endpoints[,2])
+colnames(model_data) <- c(names(model_data[,1:100]), "Y")
+
+set.seed(123)
+data_split <- createDataPartition(y = model_data$Y, p = 0.7,
+                              list = FALSE)
+data.train <- model_data[data_split,]
+data.test <- model_data[-data_split,]
+```
+
+
+(d) Which model has the best predictive ability? Is any model significantly better or worse than the others?
+Models we learned in this chapter are: OLS regression, PLS, ridge/lasso/elastic net regression
+```{r}
+set.seed(123)
+ctrl <- trainControl(method = "cv", number = 10) #set for 10 fold cross validation
+
+lm.fit <- train(Y ~., 
+                   data = data.train, 
+                   method = "lm", 
+                   trControl = ctrl, 
+                   preProc = c("center", "scale"), 
+                   tuneLength = 20)
+
+pls.fit <- train(Y ~., 
+                   data = data.train, 
+                   method = "pls", 
+                   trControl = ctrl, 
+                   preProc = c("center", "scale"), 
+                   tuneLength = 20)
+
+ridge.fit <- train(Y ~., 
+                   data = data.train, 
+                   method = "ridge", 
+                   trControl = ctrl, 
+                   preProc = c("center", "scale"), 
+                   tuneLength = 20)
+
+lasso.fit <- train(Y ~., 
+                   data = data.train, 
+                   method = "lasso", 
+                   trControl = ctrl, 
+                   preProc = c("center", "scale"), 
+                   tuneLength = 20) 
+
+enet.fit <- train(Y ~., 
+                  data = data.train, 
+                  method = "enet", 
+                  trControl = ctrl, 
+                  preProc = c("center", "scale"), 
+                  tuneLength = 20) 
+
+
+```
+
+The following plots are to show RMSE when the model has tuning parameters (note that lm does not have tuning parameters and thus is not indluced in the plots). 
+```{r}
+suppressMessages(library(gridExtra))
+#g1 <- ggplot(lm.fit)
+g2 <- ggplot(pls.fit)
+g3 <- ggplot(ridge.fit)
+g4 <- ggplot(lasso.fit)
+g5 <- ggplot(enet.fit)
+suppressMessages(grid.arrange(g2, g3, g4, g5, ncol = 5))
+```
+
+(e) Explain which model you would use for predicting the fat content of a sample.
+```{r}
+pred.lm <- predict(lm.fit, data.test)
+pred.pls <- predict(pls.fit, data.test)
+pred.ridge <- predict(ridge.fit, data.test)
+pred.lasso <- predict(lasso.fit, data.test)
+pred.enet <- predict(enet.fit, data.test)
+```
+
+```{r}
+Lm.RMSE <- RMSE(pred.lm, data.test$Y)
+PLS.RMSE <- RMSE(pred.pls, data.test$Y)
+Ridge.RMSE <- RMSE(pred.ridge, data.test$Y)
+Lasso.RMSE <- RMSE(pred.lasso, data.test$Y) 
+Enet.RMSE <- RMSE(pred.enet, data.test$Y) 
+
+
+values <- cbind(Lm.RMSE, PLS.RMSE, 
+           Ridge.RMSE, Lasso.RMSE, Enet.RMSE); rownames(c) <- "RMSE"
+knitr::kable(round(values, digits = 3))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
